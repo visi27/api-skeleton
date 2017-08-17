@@ -6,8 +6,9 @@
  *
  */
 
-namespace AppBundle\Controller\Api;
+namespace AppBundle\Controller\Api\V1;
 
+use AppBundle\Controller\Api\BaseController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,7 +18,7 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 class TokenController extends BaseController
 {
     /**
-     * @Route("/api/tokens", name="api_token_new")
+     * @Route("/api/v1.0/tokens", name="api_v1.0_token_new")
      * @Method("POST")
      *
      * @param Request $request
