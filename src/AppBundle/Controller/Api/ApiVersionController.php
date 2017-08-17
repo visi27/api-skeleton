@@ -19,19 +19,34 @@ class ApiVersionController extends BaseController
 
         // Get the configured values of Api versions. This will be used to try and fallback to an older API version
         $api_versions = $this->getParameter('api_versions');
+        $latest_version = $this->getParameter('api_latest_version');
 
         // Extract requested API version from url
         $exploded_path = explode('/', $request_path);
         $url_api_version = $exploded_path[0];
 
-        $router = $this->container->get('router');
 
+        $router = $this->container->get('router');
         $matcher = $router->getMatcher();
 
+        // Check if api url is starting with a version. If not try to redirect to latest api version
+        $is_version = preg_match('/([vV])([0-9]{1,2})([.])([0-9]{1,2})[\/]/', $url_api_version.'/');
+        if(!($is_version==1)){
+            $url_api_version = $latest_version;
 
-//        foreach ($router->getRouteCollection()->getIterator() as $route){
-//            $route->getPath();
-//        }
+            // Add the latest version to the beginning of array of the original url
+            array_unshift($exploded_path, $latest_version);
+
+            // rebuild api url, use array_slice to get the exploded array of the original url without the original version
+            $redirect_path = '/api/'.$latest_version.'/'.implode('/', array_slice($exploded_path, 1));
+
+            // If the url mathces to a route, redirect. Otherwise we have already set $url_api_version to latest version
+            // so it will continue to try and fallback to previeous verions until it finds one or no versions remain
+            $matched = $matcher->match($redirect_path);
+            if($matched["_route"] != "defaultCatchAll"){
+                return $this->redirect($redirect_path, 307);
+            }
+        }
 
         $check_api_version = $url_api_version;
         // Check if the requested API version is correct (we have it in our config)
@@ -39,10 +54,11 @@ class ApiVersionController extends BaseController
         // a symfony route. If we have a match redirect to that route.
         while($check_api_version = $this->getPreviousVersion($check_api_version, $api_versions)){
             if($check_api_version){
+                // rebuild api url, use array_slice to get the exploded array of the original url without the original version
                 $redirect_path = '/api/'.$check_api_version.'/'.implode('/', array_slice($exploded_path, 1));
                 $matched = $matcher->match($redirect_path);
                 if($matched["_route"] != "defaultCatchAll"){
-                    return $this->redirect($redirect_path);
+                    return $this->redirect($redirect_path, 307);
                 }
             }else{
                 // If the above conditions fail retur a 404 Not Found Response
