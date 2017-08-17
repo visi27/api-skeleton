@@ -18,34 +18,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class BaseController extends Controller
 {
-    public function indexAction($name)
+    public function indexAction()
     {
-        return $this->render('', ['name' => $name]);
-    }
-
-    /**
-     * Use JMS Serialiser to serialize objects in our controllers.
-     *
-     * @param object|array $data
-     * @param string       $format
-     *
-     * @return mixed|string
-     */
-    protected function serialize($data, $format = 'json')
-    {
-        $context = new SerializationContext();
-        $context->setSerializeNull(true);
-
-        $request = $this->get('request_stack')->getCurrentRequest();
-        $groups = ['Default'];
-
-        if ($request->query->get('deep')) {
-            $groups[] = 'deep';
-        }
-
-        $context->setGroups($groups);
-
-        return $this->get('jms_serializer')->serialize($data, $format, $context);
+        return $this->createApiResponse(
+            ["message" => "Welcome", "latest_version" => "2.0", "latest_version_base_url" => '/api/v2.0/']
+        );
     }
 
     /**
@@ -67,6 +44,44 @@ class BaseController extends Controller
         );
     }
 
+    /**
+     * Use JMS Serialiser to serialize objects in our controllers.
+     *
+     * @param object|array $data
+     * @param string $format
+     *
+     * @return mixed|string
+     */
+    protected function serialize($data, $format = 'json')
+    {
+        $context = new SerializationContext();
+        $context->setSerializeNull(true);
+
+        $request = $this->get('request_stack')->getCurrentRequest();
+        $groups = ['Default'];
+
+        if ($request->query->get('deep')) {
+            $groups[] = 'deep';
+        }
+
+        $context->setGroups($groups);
+
+        return $this->get('jms_serializer')->serialize($data, $format, $context);
+    }
+
+    protected function throwApiProblemValidationException(FormInterface $form)
+    {
+        $errors = $this->getErrorsFromForm($form);
+
+        $apiProblem = new ApiProblem(
+            400,
+            ApiProblem::TYPE_VALIDATION_ERROR
+        );
+
+        $apiProblem->set('errors', $errors);
+        throw new ApiProblemException($apiProblem);
+    }
+
     private function getErrorsFromForm(FormInterface $form)
     {
         $errors = [];
@@ -82,19 +97,6 @@ class BaseController extends Controller
         }
 
         return $errors;
-    }
-
-    protected function throwApiProblemValidationException(FormInterface $form)
-    {
-        $errors = $this->getErrorsFromForm($form);
-
-        $apiProblem = new ApiProblem(
-            400,
-            ApiProblem::TYPE_VALIDATION_ERROR
-        );
-
-        $apiProblem->set('errors', $errors);
-        throw new ApiProblemException($apiProblem);
     }
 
     protected function processForm(Request $request, FormInterface $form)

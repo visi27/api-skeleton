@@ -20,4 +20,4 @@ defaultCatchAll:
 homepage:
   path: /
   defaults:
-    _controller: AppBundle:Web/Main:homepage
+    _controller: AppBundle:Api\Base:index
