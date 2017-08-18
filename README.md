@@ -143,9 +143,4 @@ wget --quiet \
 
 Tests
 =====
-* Install phpunit and execute it inside the project directory
-
-Third Party
-===========
-
-HTML template courtesy of Blackrock Digital: https://github.com/BlackrockDigital/startbootstrap-blog-post
+* Exec `vendor/bin/phpunit` inside the project directory tu run the tests
