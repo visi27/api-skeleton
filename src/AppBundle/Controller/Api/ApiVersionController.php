@@ -40,7 +40,7 @@ class ApiVersionController extends BaseController
             // rebuild api url, use array_slice to get the exploded array of the original url without the original version
             $redirect_path = '/api/'.$latest_version.'/'.implode('/', array_slice($exploded_path, 1));
 
-            // If the url mathces to a route, redirect. Otherwise we have already set $url_api_version to latest version
+            // If the url matches to a route, redirect. Otherwise we have already set $url_api_version to latest version
             // so it will continue to try and fallback to previeous verions until it finds one or no versions remain
             $matched = $matcher->match($redirect_path);
             if($matched["_route"] != "defaultCatchAll"){
